@@ -64,7 +64,8 @@ const quiz=[
 ];
 let i=0,score=0,picked=[],locked=false,order=[],v=0;
 const $=s=>document.querySelector(s), shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
-function speakText(text){if(!('speechSynthesis' in window))return alert('Trình duyệt này chưa hỗ trợ phát âm. Bạn hãy mở bằng Chrome hoặc Edge nhé.');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=.78;u.pitch=1;speechSynthesis.speak(u)}
+function deviceSpeak(text){if(!('speechSynthesis' in window))return alert('Không phát được âm thanh. Hãy kiểm tra kết nối mạng và âm lượng điện thoại nhé.');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=.78;u.pitch=1;const voices=speechSynthesis.getVoices();const zh=voices.find(v=>v.lang.toLowerCase().startsWith('zh'));if(zh)u.voice=zh;speechSynthesis.speak(u)}
+function speakText(text){if(window.currentAudio){window.currentAudio.pause()}const url='https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=zh-CN&q='+encodeURIComponent(text);const audio=new Audio(url);window.currentAudio=audio;audio.onerror=()=>deviceSpeak(text);audio.play().catch(()=>deviceSpeak(text))}
 function showVocab(){const x=vocab[v];$('#vocabCount').textContent=`Từ ${v+1} / ${vocab.length}`;$('#hanzi').textContent=x.w;$('#vocabPinyin').textContent=x.py;$('#vocabMeaning').textContent=x.vi;$('#vocabPrev').disabled=v===0;$('#vocabNext').textContent=v===vocab.length-1?'Bắt đầu ghép câu →':'Từ tiếp →';$('#bar').style.width=`${(v+1)/vocab.length*100}%`}
 $('#vocabPrev').onclick=()=>{if(v>0){v--;showVocab()}};$('#vocabListen').onclick=()=>speakText(vocab[v].w);$('#vocabNext').onclick=()=>{if(v<vocab.length-1){v++;showVocab()}else{startQuiz()}};
 function startQuiz(){$('#learnCard').style.display='none';$('#card').style.display='block';$('#title').textContent='Ghép câu tiếng Trung';$('#scoreBox').style.display='block';load()}
